@@ -9,5 +9,7 @@ public interface NetworkInterface {
     @GET("movie/{category}")
     Call<PopularMovie> getPopularMovie(@Path("category") String category,
                                        @Query("api_key") String api_key,
-                                       @Query("page") int page);
+                                       @Query("page") int page,
+                                       @Query("language") String lan);
+
 }

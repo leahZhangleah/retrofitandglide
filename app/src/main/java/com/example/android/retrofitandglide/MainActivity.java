@@ -1,14 +1,21 @@
 package com.example.android.retrofitandglide;
 
+import android.app.SearchManager;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.ComponentName;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
 
 import com.example.android.retrofitandglide.ViewModel.MainViewModel;
 import com.example.android.retrofitandglide.ViewModel.MainViewModelFactory;
@@ -64,6 +71,26 @@ public class MainActivity extends AppCompatActivity{
         });
         Log.d(LOG_TAG,"observe data returned from database and listen to change");
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.search,menu);
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        final MenuItem searchItem = menu.findItem(R.id.search);
+        ComponentName componentName = new ComponentName(this,SearchActivity.class);
+        SearchView searchView = (SearchView) searchItem.getActionView();
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(componentName));
+
+        searchView.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if(!hasFocus){
+                    searchItem.collapseActionView();
+                }
+            }
+        });
+        return super.onCreateOptionsMenu(menu);
     }
 
 }

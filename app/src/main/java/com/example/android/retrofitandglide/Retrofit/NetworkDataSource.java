@@ -34,7 +34,7 @@ public class NetworkDataSource {
     }
 
     public void getPopularMoviesFromInternet(final ResponseCallback callback, String category, int page){
-        Call<PopularMovie> popularMovieCall = mNetworkInterface.getPopularMovie(category,api_key,page);
+        Call<PopularMovie> popularMovieCall = mNetworkInterface.getPopularMovie(category,api_key,page,"zh");
         popularMovieCall.enqueue(new Callback<PopularMovie>() {
             @Override
             public void onResponse(Call<PopularMovie> call, Response<PopularMovie> response) {
