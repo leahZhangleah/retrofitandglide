@@ -4,6 +4,7 @@ import android.app.Application;
 import android.util.Log;
 
 import com.example.android.retrofitandglide.AppExecutor;
+import com.example.android.retrofitandglide.R;
 import com.example.android.retrofitandglide.Retrofit.NetworkDataSource;
 import com.example.android.retrofitandglide.Retrofit.NetworkInterface;
 import com.example.android.retrofitandglide.ViewModel.Repository;
@@ -22,11 +23,12 @@ public class MovieModule {
     private static final String LOG_TAG = MovieModule.class.getName();
     private static NetworkInterface networkInterface;
     private static final Object LOCK = new Object();
-    private static String baseUrl = "https://api.themoviedb.org/3/";
+    private static String baseUrl;
     private Application mApplication;
 
     public MovieModule(Application application) {
         this.mApplication = application;
+        baseUrl = mApplication.getString(R.string.base_url);
     }
 
     @Provides

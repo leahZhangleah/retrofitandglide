@@ -12,4 +12,9 @@ public interface NetworkInterface {
                                        @Query("page") int page,
                                        @Query("language") String lan);
 
+    @GET("search/multi")
+    Call<SearchMovie> search(@Query("api_key")String api_key,
+                             @Query("query") String query,
+                             @Query("page") int page);
+
 }

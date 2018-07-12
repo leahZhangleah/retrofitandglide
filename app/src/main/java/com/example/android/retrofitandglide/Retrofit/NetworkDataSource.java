@@ -2,10 +2,9 @@ package com.example.android.retrofitandglide.Retrofit;
 
 import android.arch.lifecycle.MutableLiveData;
 import android.content.Context;
-import android.content.Intent;
 import android.util.Log;
 
-import com.example.android.retrofitandglide.FetchIntentService;
+import com.example.android.retrofitandglide.R;
 import com.example.android.retrofitandglide.database.PopMovie;
 
 import java.util.ArrayList;
@@ -17,20 +16,27 @@ import retrofit2.Response;
 
 public class NetworkDataSource {
     private static final String LOG_TAG = NetworkDataSource.class.getName();
-    private  String api_key = "846cd2cdc1ddb950b6f8e90df6261b3a";
+    private  String api_key;
     private  NetworkInterface mNetworkInterface;
     private  MutableLiveData<List<PopMovie>> mutableLiveData;
-    private Context mContext;
+    private  Context mContext;
+    private MutableLiveData<List<SearchResult>> searchResults;
 
     public NetworkDataSource(Context context,NetworkInterface mNetworkInterface) {
         this.mNetworkInterface = mNetworkInterface;
         mContext = context;
         mutableLiveData = new MutableLiveData<>();
+        api_key = mContext.getResources().getString(R.string.api_key);
+        searchResults = new MutableLiveData<>();
     }
 
     public interface ResponseCallback{
         void onSuccess(MutableLiveData<List<PopMovie>> mutableLiveData);
         void onFailure();
+    }
+
+    public interface SearchCallback{
+        void onSearchSuccess(List<SearchResult> searchResults);
     }
 
     public void getPopularMoviesFromInternet(final ResponseCallback callback, String category, int page){
@@ -61,8 +67,27 @@ public class NetworkDataSource {
         });
     }
 
-    public void startFetchIntentService(){
-        Intent intentToFetch = new Intent(mContext, FetchIntentService.class);
-        mContext.startService(intentToFetch);
+
+    public void searchFromInternet(final SearchCallback mSearchCallback, String query, int page){
+        Log.d(LOG_TAG,"searchFromInternet is called");
+        Call<SearchMovie> searchMovieCall = mNetworkInterface.search(api_key,query,page);
+        String requestURL = mNetworkInterface.search(api_key,query,page).request().url().toString();
+        Log.d(LOG_TAG,"the request url is: "+requestURL);
+        Log.d(LOG_TAG,"search method from network interface is called");
+        searchMovieCall.enqueue(new Callback<SearchMovie>() {
+            @Override
+            public void onResponse(Call<SearchMovie> call, Response<SearchMovie> response) {
+                Log.d(LOG_TAG,"the data is returned from retrofit search call and passed to mutablelivedata");
+                SearchMovie mSearchMovie = response.body();
+                Log.d(LOG_TAG,"the returned result is: "+searchResults);
+                mSearchCallback.onSearchSuccess(mSearchMovie.getResults());
+            }
+
+            @Override
+            public void onFailure(Call<SearchMovie> call, Throwable t) {
+
+            }
+        });
     }
+
 }

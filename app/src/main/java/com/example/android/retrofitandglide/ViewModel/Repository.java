@@ -8,12 +8,13 @@ import android.util.Log;
 
 import com.example.android.retrofitandglide.AppExecutor;
 import com.example.android.retrofitandglide.Retrofit.NetworkDataSource;
+import com.example.android.retrofitandglide.Retrofit.SearchResult;
 import com.example.android.retrofitandglide.database.PopMovie;
 import com.example.android.retrofitandglide.database.ShowDao;
 
 import java.util.List;
 
-public class Repository implements NetworkDataSource.ResponseCallback {
+public class Repository implements NetworkDataSource.ResponseCallback,NetworkDataSource.SearchCallback{
     private static final String LOG_TAG = Repository.class.getName();
     private static final Object LOCK = new Object();
     private boolean mInitialized = false;
@@ -21,13 +22,15 @@ public class Repository implements NetworkDataSource.ResponseCallback {
     private ShowDao mShowDao;
     private AppExecutor mAppExecutor;
     private static Repository mInstance;
-    private  MutableLiveData<List<PopMovie>> mutableLiveData;
+    private MutableLiveData<List<PopMovie>> mutableLiveData;
+    private MutableLiveData<List<SearchResult>> mutableLiveSearchResults;
 
     public Repository(NetworkDataSource mNetworkDataSource, ShowDao mShowDao, AppExecutor mAppExecutor) {
         this.mNetworkDataSource = mNetworkDataSource;
         this.mShowDao = mShowDao;
         this.mAppExecutor = mAppExecutor;
         Log.d(LOG_TAG,"repository is instantiated");
+        mutableLiveSearchResults = new MutableLiveData<>();
 
     }
 
@@ -66,9 +69,6 @@ public class Repository implements NetworkDataSource.ResponseCallback {
         Log.d(LOG_TAG,"insert new data in database");
     }
 
-    private void startFetchService(){
-        mNetworkDataSource.startFetchIntentService();
-    }
 
     @Override
     public void onSuccess(MutableLiveData<List<PopMovie>> popMovies) {
@@ -93,5 +93,16 @@ public class Repository implements NetworkDataSource.ResponseCallback {
     @Override
     public void onFailure() {
 
+    }
+
+    public MutableLiveData<List<SearchResult>> search(String query, int page){
+        Log.d(LOG_TAG,"search method from NetworkDatasource is called");
+        mNetworkDataSource.searchFromInternet(this,query,page);
+        return mutableLiveSearchResults;
+    }
+
+    @Override
+    public void onSearchSuccess(List<SearchResult> searchResults) {
+        mutableLiveSearchResults.postValue(searchResults);
     }
 }
