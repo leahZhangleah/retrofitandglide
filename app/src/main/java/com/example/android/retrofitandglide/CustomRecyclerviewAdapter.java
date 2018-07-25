@@ -61,7 +61,7 @@ public class CustomRecyclerviewAdapter extends RecyclerView.Adapter<CustomRecycl
         public void bindMovie(PopMovie movie){
             titleV.setText(movie.getTitle());
             String imagePath = movie.getImage_path();
-            Glide.with(mContext).load("https://image.tmdb.org/t/p/w500"+imagePath).into(imageV);
+            Glide.with(mContext).load("https://image.tmdb.org/t/p/w200"+imagePath).into(imageV);
         }
     }
 

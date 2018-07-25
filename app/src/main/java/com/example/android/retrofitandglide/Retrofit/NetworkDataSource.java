@@ -10,6 +10,10 @@ import com.example.android.retrofitandglide.database.PopMovie;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -21,6 +25,7 @@ public class NetworkDataSource {
     private  MutableLiveData<List<PopMovie>> mutableLiveData;
     private  Context mContext;
     private MutableLiveData<List<SearchResult>> searchResults;
+    private Call<SearchMovie> searchMovieCall;
 
     public NetworkDataSource(Context context,NetworkInterface mNetworkInterface) {
         this.mNetworkInterface = mNetworkInterface;
@@ -39,7 +44,12 @@ public class NetworkDataSource {
         void onSearchSuccess(List<SearchResult> searchResults);
     }
 
-    public void getPopularMoviesFromInternet(final ResponseCallback callback, String category, int page){
+    public void getPopularMoviesFromInternet(final ResponseCallback callback,String category, int page){
+        /*
+        mNetworkInterface.getPopularMovie(category,api_key,page,"zh")
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+           */
         Call<PopularMovie> popularMovieCall = mNetworkInterface.getPopularMovie(category,api_key,page,"zh");
         popularMovieCall.enqueue(new Callback<PopularMovie>() {
             @Override
@@ -68,9 +78,20 @@ public class NetworkDataSource {
     }
 
 
-    public void searchFromInternet(final SearchCallback mSearchCallback, String query, int page){
+    public Observable<List<SearchResult>> searchFromInternet(String query, final int page){
         Log.d(LOG_TAG,"searchFromInternet is called");
-        Call<SearchMovie> searchMovieCall = mNetworkInterface.search(api_key,query,page);
+        Observable<SearchMovie> searchMovieObservable = mNetworkInterface.search(api_key,query,page)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
+        Observable<List<SearchResult>> searchResultObservable =  searchMovieObservable.map(new Function<SearchMovie, List<SearchResult>>() {
+            @Override
+            public List<SearchResult> apply(SearchMovie searchMovie) throws Exception {
+                return searchMovie.getResults();
+            }
+        });
+        return searchResultObservable;
+        /*
+        searchMovieCall = mNetworkInterface.search(api_key,query,page);
         String requestURL = mNetworkInterface.search(api_key,query,page).request().url().toString();
         Log.d(LOG_TAG,"the request url is: "+requestURL);
         Log.d(LOG_TAG,"search method from network interface is called");
@@ -85,9 +106,20 @@ public class NetworkDataSource {
 
             @Override
             public void onFailure(Call<SearchMovie> call, Throwable t) {
-
+                if(call.isCanceled()){
+                    Toast.makeText(mContext,"retrofit call is cancelled",Toast.LENGTH_SHORT).show();
+                }else{
+                    Toast.makeText(mContext,"retrofit call is failed",Toast.LENGTH_SHORT).show();
+                }
             }
-        });
+        });*/
+    }
+
+    public void cancelRetrofitCall(){
+        if(searchMovieCall!=null){
+            searchMovieCall.cancel();
+            Log.d(LOG_TAG,"retrofit call is cancelled");
+        }
     }
 
 }

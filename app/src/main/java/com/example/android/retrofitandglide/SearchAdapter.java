@@ -10,7 +10,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.android.retrofitandglide.Retrofit.SearchResult;
 
 import java.util.ArrayList;
@@ -46,10 +46,14 @@ public class SearchAdapter extends ArrayAdapter<SearchResult> {
             searchSummary = mSearchResult.getOverview();
             searchResultTitle.setText(searchTitle);
             searchResultSummary.setText(searchSummary);
-            Glide.with(mContext).load("https://image.tmdb.org/t/p/w500"+imagePath).into(searchResultIMG);
+            GlideApp.with(mContext)
+                    .load("https://image.tmdb.org/t/p/w200"+imagePath)
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .into(searchResultIMG);
         }
 
         //todo: handle error imageUrl
         return convertView;
     }
+
 }

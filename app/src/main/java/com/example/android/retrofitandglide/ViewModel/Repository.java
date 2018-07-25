@@ -14,6 +14,8 @@ import com.example.android.retrofitandglide.database.ShowDao;
 
 import java.util.List;
 
+import io.reactivex.Observable;
+
 public class Repository implements NetworkDataSource.ResponseCallback,NetworkDataSource.SearchCallback{
     private static final String LOG_TAG = Repository.class.getName();
     private static final Object LOCK = new Object();
@@ -95,14 +97,19 @@ public class Repository implements NetworkDataSource.ResponseCallback,NetworkDat
 
     }
 
-    public MutableLiveData<List<SearchResult>> search(String query, int page){
+    public Observable<List<SearchResult>> search(String query, int page){
         Log.d(LOG_TAG,"search method from NetworkDatasource is called");
-        mNetworkDataSource.searchFromInternet(this,query,page);
-        return mutableLiveSearchResults;
+        return mNetworkDataSource.searchFromInternet(query,page);
     }
 
     @Override
     public void onSearchSuccess(List<SearchResult> searchResults) {
         mutableLiveSearchResults.postValue(searchResults);
     }
+
+    public void cancelRetrofitCall(){
+        mNetworkDataSource.cancelRetrofitCall();
+        Log.d(LOG_TAG,"retrofit call is cancelled");
+    }
+
 }

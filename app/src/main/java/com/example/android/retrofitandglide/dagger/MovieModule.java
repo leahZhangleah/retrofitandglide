@@ -10,11 +10,19 @@ import com.example.android.retrofitandglide.Retrofit.NetworkInterface;
 import com.example.android.retrofitandglide.ViewModel.Repository;
 import com.example.android.retrofitandglide.database.ShowDao;
 import com.example.android.retrofitandglide.database.ShowDatabase;
+import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
+
+import java.io.IOException;
 
 import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -46,16 +54,30 @@ public class MovieModule {
     }
 
     @Provides
-    @Singleton
     public NetworkInterface providesNetworkInterface(){
-        if (networkInterface == null){
-            synchronized (LOCK){
-                Retrofit retrofit = new Retrofit.Builder().baseUrl(baseUrl)
-                        .addConverterFactory(GsonConverterFactory.create())
-                        .build();
-                networkInterface = retrofit.create(NetworkInterface.class);
+        OkHttpClient.Builder httpClientBuilder = new OkHttpClient.Builder();
+        HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+        interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+        httpClientBuilder.addInterceptor(interceptor);
+        httpClientBuilder.addInterceptor(new Interceptor() {
+            @Override
+            public Response intercept(Chain chain) throws IOException {
+                Request original = chain.request();
+                Request.Builder builder = original.newBuilder()
+                        .addHeader("Accept","application/json")
+                        .addHeader("Request-Type","Android")
+                        .addHeader("Content-Type","application/json");
+                Request request = builder.build();
+                return chain.proceed(request);
             }
-        }
+        });
+        OkHttpClient okHttpClient = httpClientBuilder.build();
+        Retrofit retrofit = new Retrofit.Builder().baseUrl(baseUrl)
+                .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                .client(okHttpClient)
+                .build();
+        networkInterface = retrofit.create(NetworkInterface.class);
         Log.d(LOG_TAG,"provides network interface");
         return networkInterface;
     }
