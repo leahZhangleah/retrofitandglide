@@ -3,14 +3,13 @@ package com.example.android.retrofitandglide;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.android.retrofitandglide.database.PopMovie;
 
 import java.util.List;
@@ -19,8 +18,9 @@ public class CustomRecyclerviewAdapter extends RecyclerView.Adapter<CustomRecycl
     private static final String LOG_TAG = CustomRecyclerviewAdapter.class.getName();
     List<PopMovie> popMovies;
     Context mContext;
-    public CustomRecyclerviewAdapter(Context context){
+    public CustomRecyclerviewAdapter(Context context,List<PopMovie> popMovies){
         mContext = context;
+        this.popMovies = popMovies;
     }
     @NonNull
     @Override
@@ -61,13 +61,11 @@ public class CustomRecyclerviewAdapter extends RecyclerView.Adapter<CustomRecycl
         public void bindMovie(PopMovie movie){
             titleV.setText(movie.getTitle());
             String imagePath = movie.getImage_path();
-            Glide.with(mContext).load("https://image.tmdb.org/t/p/w200"+imagePath).into(imageV);
+            GlideApp.with(mContext)
+                    .load("https://image.tmdb.org/t/p/w200"+imagePath)
+                    .apply(RequestOptions.centerCropTransform())
+                    .into(imageV);
         }
     }
 
-    public void setResults(List<PopMovie> popMovies) {
-        this.popMovies = popMovies;
-        Log.d(LOG_TAG,"the data of adapter is resetted");
-        notifyDataSetChanged();
-    }
 }

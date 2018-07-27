@@ -25,6 +25,7 @@ import com.example.android.retrofitandglide.dagger.MovieComponent;
 import com.example.android.retrofitandglide.dagger.MovieModule;
 import com.example.android.retrofitandglide.database.PopMovie;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -37,6 +38,7 @@ public class MainActivity extends AppCompatActivity{
     //CustomAdapter customAdapter;
     private CustomRecyclerviewAdapter adapter;
     private MovieComponent movieComponent;
+    private List<PopMovie> popMoviesList;
     //ArrayAdapter<String> arrayAdapter;
 
     @Override
@@ -50,7 +52,8 @@ public class MainActivity extends AppCompatActivity{
         RecyclerView popularMovie = findViewById(R.id.popular_movie_recycler);
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(this,2);
         popularMovie.setLayoutManager(layoutManager);
-        adapter = new CustomRecyclerviewAdapter(this);
+        popMoviesList = new ArrayList<>();
+        adapter = new CustomRecyclerviewAdapter(this,popMoviesList);
         //customAdapter = new CustomAdapter(this,new ArrayList<Result>());
         //arrayAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1);
         popularMovie.setAdapter(adapter);
@@ -66,7 +69,9 @@ public class MainActivity extends AppCompatActivity{
         popMovies.observe(this, new Observer<List<PopMovie>>() {
             @Override
             public void onChanged(@Nullable List<PopMovie> popMovies) {
-                adapter.setResults(popMovies);
+                popMoviesList.clear();
+                popMoviesList.addAll(popMovies);
+                adapter.notifyDataSetChanged();
             }
         });
         Log.d(LOG_TAG,"observe data returned from database and listen to change");
@@ -93,4 +98,9 @@ public class MainActivity extends AppCompatActivity{
         return super.onCreateOptionsMenu(menu);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        popMoviesList.clear();
+    }
 }

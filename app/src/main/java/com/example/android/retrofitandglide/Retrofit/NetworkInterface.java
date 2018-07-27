@@ -15,7 +15,7 @@ public interface NetworkInterface {
 
     @GET("search/multi")
     Observable<SearchMovie> search(@Query("api_key")String api_key,
-                                   @Query("query") String query,
-                                   @Query("page") int page);
+                                          @Query("query") String query,
+                                          @Query("page") int page);
 
 }

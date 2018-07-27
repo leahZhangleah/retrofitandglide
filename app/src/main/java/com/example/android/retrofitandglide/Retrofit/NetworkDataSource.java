@@ -11,6 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.ObservableSource;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
@@ -82,14 +85,23 @@ public class NetworkDataSource {
         Log.d(LOG_TAG,"searchFromInternet is called");
         Observable<SearchMovie> searchMovieObservable = mNetworkInterface.search(api_key,query,page)
                 .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread());
-        Observable<List<SearchResult>> searchResultObservable =  searchMovieObservable.map(new Function<SearchMovie, List<SearchResult>>() {
+                .observeOn(AndroidSchedulers.mainThread())
+                .distinctUntilChanged();
+        return searchMovieObservable
+                .flatMap(new Function<SearchMovie, ObservableSource<List<SearchResult>>>() {
             @Override
-            public List<SearchResult> apply(SearchMovie searchMovie) throws Exception {
-                return searchMovie.getResults();
+            public ObservableSource<List<SearchResult>> apply(final SearchMovie searchMovie) throws Exception {
+                return Observable.create(new ObservableOnSubscribe<List<SearchResult>>() {
+                    @Override
+                    public void subscribe(ObservableEmitter<List<SearchResult>> emitter) throws Exception {
+                        if(!emitter.isDisposed()){
+                            emitter.onNext(searchMovie.getResults());
+                        }
+                    }
+                });
             }
         });
-        return searchResultObservable;
+        //return searchResultObservable;
         /*
         searchMovieCall = mNetworkInterface.search(api_key,query,page);
         String requestURL = mNetworkInterface.search(api_key,query,page).request().url().toString();

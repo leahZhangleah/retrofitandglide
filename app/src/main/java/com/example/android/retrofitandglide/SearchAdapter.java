@@ -10,7 +10,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.android.retrofitandglide.Retrofit.SearchResult;
 
 import java.util.ArrayList;
@@ -48,7 +48,7 @@ public class SearchAdapter extends ArrayAdapter<SearchResult> {
             searchResultSummary.setText(searchSummary);
             GlideApp.with(mContext)
                     .load("https://image.tmdb.org/t/p/w200"+imagePath)
-                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .apply(RequestOptions.centerCropTransform())
                     .into(searchResultIMG);
         }
 

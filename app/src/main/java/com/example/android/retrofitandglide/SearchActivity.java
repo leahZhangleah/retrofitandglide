@@ -1,15 +1,20 @@
 package com.example.android.retrofitandglide;
 
 import android.app.SearchManager;
+import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.example.android.retrofitandglide.Retrofit.SearchResult;
+import com.example.android.retrofitandglide.ViewModel.ApiResponse;
 import com.example.android.retrofitandglide.ViewModel.Repository;
 import com.example.android.retrofitandglide.ViewModel.SearchViewModel;
 import com.example.android.retrofitandglide.ViewModel.SearchViewModelFactory;
@@ -22,10 +27,6 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import io.reactivex.Observable;
-import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.observers.DisposableObserver;
-
 public class SearchActivity extends AppCompatActivity {
     private static final String LOG_TAG = SearchActivity.class.getName();
     @Inject
@@ -37,7 +38,8 @@ public class SearchActivity extends AppCompatActivity {
     private MovieComponent movieComponent;
     private ArrayList<SearchResult> searchResultArrayList;
     private SearchViewModel searchViewModel;
-    private CompositeDisposable compositeDisposable;
+    //private CompositeDisposable compositeDisposable;
+    private ProgressBar loading;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,25 +62,55 @@ public class SearchActivity extends AppCompatActivity {
 
         ListView searchList = findViewById(R.id.search_list);
         searchResultArrayList = new ArrayList<>();
-        compositeDisposable = new CompositeDisposable();
         searchAdapter = new SearchAdapter(this,searchResultArrayList);
         searchList.setAdapter(searchAdapter);
-        loadSearchResult(query);
-    }
+        loading = (ProgressBar) findViewById(R.id.loading);
 
-    /*
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putString("savedQueryKey",query);
-    }*/
-
-    private void loadSearchResult(String query){
         Log.d(LOG_TAG,"loadSearchResult method is called");
         SearchViewModelFactory searchViewModelFactory = new SearchViewModelFactory(mRepository,query,page);
         Log.d(LOG_TAG,"searchViewModelFactory is created");
         searchViewModel = ViewModelProviders.of(this,searchViewModelFactory).get(SearchViewModel.class);
         Log.d(LOG_TAG,"searchViewModel is created");
+        searchViewModel.searchResponse().observe(this, new Observer<ApiResponse>() {
+            @Override
+            public void onChanged(@Nullable ApiResponse apiResponse) {
+                consumeApiResponse(apiResponse);
+            }
+        });
+        loadSearchResult(query);
+    }
+
+    private void consumeApiResponse(ApiResponse apiResponse){
+        switch ((apiResponse.status)){
+            case LOADING:
+                loading.setVisibility(View.VISIBLE);
+                break;
+            case SUCCESS:
+                loading.setVisibility(View.INVISIBLE);
+                renderSuccessResponse(apiResponse.data);
+                break;
+            case ERROR:
+                loading.setVisibility(View.INVISIBLE);
+                Toast.makeText(this,"error in getting data",Toast.LENGTH_SHORT).show();
+                break;
+                default:
+                    break;
+        }
+    }
+
+    private void renderSuccessResponse(List<SearchResult> searchResults){
+        if(!searchResults.isEmpty()){
+           searchResultArrayList.clear();
+           searchResultArrayList.addAll(searchResults);
+           searchAdapter.notifyDataSetChanged();
+        }else{
+            Toast.makeText(this,"There is no movie with this keyword",Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void loadSearchResult(String query){
+        searchViewModel.search();
+        /*
         final Observable<List<SearchResult>> mutableLiveSearchResults = searchViewModel.search();
         DisposableObserver observer = mutableLiveSearchResults.subscribeWith(new DisposableObserver<List<SearchResult>>() {
             @Override
@@ -131,11 +163,7 @@ public class SearchActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        searchAdapter.clear();
-        searchAdapter.notifyDataSetChanged();
-        query = null;
-        searchViewModel.cancelRetrofitCall();
-        Log.d(LOG_TAG,"adapter's data is cleared");
+        //searchViewModel.cancelRetrofitCall();
         Log.d(LOG_TAG,"ON pause IS CALLED");
     }
 
@@ -149,7 +177,10 @@ public class SearchActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        compositeDisposable.clear();
+        searchResultArrayList.clear();
+        searchAdapter.notifyDataSetChanged();
+        Log.d(LOG_TAG,"adapter's data is cleared");
+        query = null;
         Log.d(LOG_TAG,"ON destroy IS CALLED");
     }
 }
