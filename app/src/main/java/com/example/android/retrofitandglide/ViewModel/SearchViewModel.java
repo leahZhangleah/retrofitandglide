@@ -4,7 +4,7 @@ import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.ViewModel;
 import android.util.Log;
 
-import com.example.android.retrofitandglide.Retrofit.SearchResult;
+import com.example.android.retrofitandglide.model.SearchResult;
 
 import java.util.List;
 

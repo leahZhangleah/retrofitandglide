@@ -11,7 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.example.android.retrofitandglide.Retrofit.Result;
+import com.example.android.retrofitandglide.model.Result;
 
 import java.util.ArrayList;
 

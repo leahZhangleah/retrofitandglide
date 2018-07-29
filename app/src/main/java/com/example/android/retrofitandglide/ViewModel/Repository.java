@@ -8,7 +8,8 @@ import android.util.Log;
 
 import com.example.android.retrofitandglide.AppExecutor;
 import com.example.android.retrofitandglide.Retrofit.NetworkDataSource;
-import com.example.android.retrofitandglide.Retrofit.SearchResult;
+import com.example.android.retrofitandglide.model.MovieDetail;
+import com.example.android.retrofitandglide.model.SearchResult;
 import com.example.android.retrofitandglide.database.PopMovie;
 import com.example.android.retrofitandglide.database.ShowDao;
 
@@ -16,7 +17,7 @@ import java.util.List;
 
 import io.reactivex.Observable;
 
-public class Repository implements NetworkDataSource.ResponseCallback,NetworkDataSource.SearchCallback{
+public class Repository implements NetworkDataSource.ResponseCallback{
     private static final String LOG_TAG = Repository.class.getName();
     private static final Object LOCK = new Object();
     private boolean mInitialized = false;
@@ -102,14 +103,8 @@ public class Repository implements NetworkDataSource.ResponseCallback,NetworkDat
         return mNetworkDataSource.searchFromInternet(query,page);
     }
 
-    @Override
-    public void onSearchSuccess(List<SearchResult> searchResults) {
-        mutableLiveSearchResults.postValue(searchResults);
-    }
-
-    public void cancelRetrofitCall(){
-        mNetworkDataSource.cancelRetrofitCall();
-        Log.d(LOG_TAG,"retrofit call is cancelled");
+    public Observable<MovieDetail> getMovieDetail(int movieId){
+        return mNetworkDataSource.getMovieDetail(movieId);
     }
 
 }

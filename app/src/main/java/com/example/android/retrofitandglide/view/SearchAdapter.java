@@ -1,4 +1,4 @@
-package com.example.android.retrofitandglide;
+package com.example.android.retrofitandglide.view;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -11,7 +11,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.request.RequestOptions;
-import com.example.android.retrofitandglide.Retrofit.SearchResult;
+import com.example.android.retrofitandglide.GlideApp;
+import com.example.android.retrofitandglide.R;
+import com.example.android.retrofitandglide.model.SearchResult;
 
 import java.util.ArrayList;
 

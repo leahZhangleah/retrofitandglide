@@ -1,4 +1,4 @@
-package com.example.android.retrofitandglide.Retrofit;
+package com.example.android.retrofitandglide.model;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;

@@ -1,11 +1,11 @@
-package com.example.android.retrofitandglide.Retrofit;
+package com.example.android.retrofitandglide.model;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
-public class SearchResult {
+public class SearchResult extends Object{
     @SerializedName("vote_count")
     @Expose
     private Integer voteCount;

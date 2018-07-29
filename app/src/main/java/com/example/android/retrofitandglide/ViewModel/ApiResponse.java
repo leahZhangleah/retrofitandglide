@@ -1,23 +1,21 @@
 package com.example.android.retrofitandglide.ViewModel;
 
-import com.example.android.retrofitandglide.Retrofit.SearchResult;
-
-import java.util.List;
-
 import io.reactivex.annotations.NonNull;
 import io.reactivex.annotations.Nullable;
 
-public class ApiResponse {
+public class ApiResponse<T> {
     public enum Status{
         LOADING,SUCCESS,ERROR,COMPLETED
     }
     public final Status status;
+    /*@Nullable
+    public final List<T>  data;*/
     @Nullable
-    public final List<SearchResult> data;
+    public final T  data;
     @Nullable
     public final Throwable error;
 
-    public ApiResponse(Status status, @Nullable List<SearchResult> data, @Nullable Throwable error) {
+    public  ApiResponse(Status status, @Nullable T data, @Nullable Throwable error) {
         this.status = status;
         this.data = data;
         this.error = error;
@@ -27,7 +25,7 @@ public class ApiResponse {
         return new ApiResponse(Status.LOADING,null,null);
     }
 
-    public static ApiResponse success(@NonNull List<SearchResult> data){
+    public static <T> ApiResponse success(@NonNull T data){
         return new ApiResponse(Status.SUCCESS,data,null);
     }
 

@@ -1,4 +1,4 @@
-package com.example.android.retrofitandglide;
+package com.example.android.retrofitandglide.view;
 
 import android.app.SearchManager;
 import android.arch.lifecycle.Observer;
@@ -13,14 +13,14 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.example.android.retrofitandglide.Retrofit.SearchResult;
+import com.example.android.retrofitandglide.MyApp;
+import com.example.android.retrofitandglide.R;
 import com.example.android.retrofitandglide.ViewModel.ApiResponse;
 import com.example.android.retrofitandglide.ViewModel.Repository;
 import com.example.android.retrofitandglide.ViewModel.SearchViewModel;
 import com.example.android.retrofitandglide.ViewModel.SearchViewModelFactory;
-import com.example.android.retrofitandglide.dagger.DaggerMovieComponent;
 import com.example.android.retrofitandglide.dagger.MovieComponent;
-import com.example.android.retrofitandglide.dagger.MovieModule;
+import com.example.android.retrofitandglide.model.SearchResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,10 +44,7 @@ public class SearchActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
-        movieComponent = DaggerMovieComponent.builder()
-                .movieModule(new MovieModule(getApplication()))
-                .build();
-        movieComponent.inject(this);
+        ((MyApp)getApplication()).getMovieComponent().inject(this);
         /*if(savedInstanceState!=null && savedInstanceState.containsKey("savedQueryKey")){
             query = savedInstanceState.getString("savedQueryKey");
             Log.d(LOG_TAG,"the query string"+query+ "is from savedinstanceState");
@@ -87,14 +84,14 @@ public class SearchActivity extends AppCompatActivity {
                 break;
             case SUCCESS:
                 loading.setVisibility(View.INVISIBLE);
-                renderSuccessResponse(apiResponse.data);
+                renderSuccessResponse((List<SearchResult>) apiResponse.data);
                 break;
             case ERROR:
                 loading.setVisibility(View.INVISIBLE);
-                Toast.makeText(this,"error in getting data",Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "error in getting data", Toast.LENGTH_SHORT).show();
                 break;
-                default:
-                    break;
+            default:
+                break;
         }
     }
 

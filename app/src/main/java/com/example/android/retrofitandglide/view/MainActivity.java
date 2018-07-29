@@ -1,4 +1,4 @@
-package com.example.android.retrofitandglide;
+package com.example.android.retrofitandglide.view;
 
 import android.app.SearchManager;
 import android.arch.lifecycle.LiveData;
@@ -6,6 +6,7 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -17,12 +18,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.example.android.retrofitandglide.MyApp;
+import com.example.android.retrofitandglide.R;
 import com.example.android.retrofitandglide.ViewModel.MainViewModel;
 import com.example.android.retrofitandglide.ViewModel.MainViewModelFactory;
 import com.example.android.retrofitandglide.ViewModel.Repository;
-import com.example.android.retrofitandglide.dagger.DaggerMovieComponent;
-import com.example.android.retrofitandglide.dagger.MovieComponent;
-import com.example.android.retrofitandglide.dagger.MovieModule;
 import com.example.android.retrofitandglide.database.PopMovie;
 
 import java.util.ArrayList;
@@ -30,14 +30,13 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity implements CustomRecyclerviewAdapter.ViewClickListener{
     private static final String LOG_TAG = MainActivity.class.getName();
     @Inject public Repository mRepository;
     private String category = "popular";
     private int page = 1;
     //CustomAdapter customAdapter;
     private CustomRecyclerviewAdapter adapter;
-    private MovieComponent movieComponent;
     private List<PopMovie> popMoviesList;
     //ArrayAdapter<String> arrayAdapter;
 
@@ -45,15 +44,14 @@ public class MainActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        movieComponent = DaggerMovieComponent.builder().movieModule(new MovieModule(getApplication())).build();
         Log.d(LOG_TAG,"instantialize movie component");
-        movieComponent.inject(this);
+        ((MyApp)getApplication()).getMovieComponent().inject(this);
         //ListView popularMovie = findViewById(R.id.popular_movie_list);
         RecyclerView popularMovie = findViewById(R.id.popular_movie_recycler);
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(this,2);
         popularMovie.setLayoutManager(layoutManager);
         popMoviesList = new ArrayList<>();
-        adapter = new CustomRecyclerviewAdapter(this,popMoviesList);
+        adapter = new CustomRecyclerviewAdapter(this,popMoviesList,this);
         //customAdapter = new CustomAdapter(this,new ArrayList<Result>());
         //arrayAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1);
         popularMovie.setAdapter(adapter);
@@ -102,5 +100,12 @@ public class MainActivity extends AppCompatActivity{
     protected void onDestroy() {
         super.onDestroy();
         popMoviesList.clear();
+    }
+
+    @Override
+    public void onClick(int movieId) {
+        Intent intent = new Intent(this,DetailActivity.class);
+        intent.putExtra("movieId",movieId);
+        startActivity(intent);
     }
 }

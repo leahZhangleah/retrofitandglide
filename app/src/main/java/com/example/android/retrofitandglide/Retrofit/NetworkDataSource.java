@@ -6,6 +6,11 @@ import android.util.Log;
 
 import com.example.android.retrofitandglide.R;
 import com.example.android.retrofitandglide.database.PopMovie;
+import com.example.android.retrofitandglide.model.MovieDetail;
+import com.example.android.retrofitandglide.model.PopularMovie;
+import com.example.android.retrofitandglide.model.Result;
+import com.example.android.retrofitandglide.model.SearchMovie;
+import com.example.android.retrofitandglide.model.SearchResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,19 +28,16 @@ import retrofit2.Response;
 
 public class NetworkDataSource {
     private static final String LOG_TAG = NetworkDataSource.class.getName();
-    private  String api_key;
+    private  String api_key,append;
     private  NetworkInterface mNetworkInterface;
     private  MutableLiveData<List<PopMovie>> mutableLiveData;
     private  Context mContext;
-    private MutableLiveData<List<SearchResult>> searchResults;
-    private Call<SearchMovie> searchMovieCall;
-
     public NetworkDataSource(Context context,NetworkInterface mNetworkInterface) {
         this.mNetworkInterface = mNetworkInterface;
         mContext = context;
         mutableLiveData = new MutableLiveData<>();
         api_key = mContext.getResources().getString(R.string.api_key);
-        searchResults = new MutableLiveData<>();
+        append = mContext.getResources().getString(R.string.append_to_responde);
     }
 
     public interface ResponseCallback{
@@ -43,16 +45,7 @@ public class NetworkDataSource {
         void onFailure();
     }
 
-    public interface SearchCallback{
-        void onSearchSuccess(List<SearchResult> searchResults);
-    }
-
     public void getPopularMoviesFromInternet(final ResponseCallback callback,String category, int page){
-        /*
-        mNetworkInterface.getPopularMovie(category,api_key,page,"zh")
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-           */
         Call<PopularMovie> popularMovieCall = mNetworkInterface.getPopularMovie(category,api_key,page,"zh");
         popularMovieCall.enqueue(new Callback<PopularMovie>() {
             @Override
@@ -60,7 +53,7 @@ public class NetworkDataSource {
                 PopularMovie popularMovie = response.body();
                 List<Result> results = popularMovie.getResults();
                 List<PopMovie> popMovies = new ArrayList<>();
-                for (Result result:results){
+                for(Result result : results){
                     int id = result.getId();
                     String title = result.getOriginalTitle();
                     double vote = result.getVoteAverage();
@@ -101,37 +94,14 @@ public class NetworkDataSource {
                 });
             }
         });
-        //return searchResultObservable;
-        /*
-        searchMovieCall = mNetworkInterface.search(api_key,query,page);
-        String requestURL = mNetworkInterface.search(api_key,query,page).request().url().toString();
-        Log.d(LOG_TAG,"the request url is: "+requestURL);
-        Log.d(LOG_TAG,"search method from network interface is called");
-        searchMovieCall.enqueue(new Callback<SearchMovie>() {
-            @Override
-            public void onResponse(Call<SearchMovie> call, Response<SearchMovie> response) {
-                Log.d(LOG_TAG,"the data is returned from retrofit search call and passed to mutablelivedata");
-                SearchMovie mSearchMovie = response.body();
-                Log.d(LOG_TAG,"the returned result is: "+searchResults);
-                mSearchCallback.onSearchSuccess(mSearchMovie.getResults());
-            }
-
-            @Override
-            public void onFailure(Call<SearchMovie> call, Throwable t) {
-                if(call.isCanceled()){
-                    Toast.makeText(mContext,"retrofit call is cancelled",Toast.LENGTH_SHORT).show();
-                }else{
-                    Toast.makeText(mContext,"retrofit call is failed",Toast.LENGTH_SHORT).show();
-                }
-            }
-        });*/
     }
 
-    public void cancelRetrofitCall(){
-        if(searchMovieCall!=null){
-            searchMovieCall.cancel();
-            Log.d(LOG_TAG,"retrofit call is cancelled");
-        }
+    public Observable<MovieDetail> getMovieDetail(int movieId){
+        Log.d(LOG_TAG,"get movie details from internet");
+        return mNetworkInterface.getMovieDetail(movieId,api_key,append)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
     }
+
 
 }
